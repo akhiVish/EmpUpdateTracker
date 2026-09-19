@@ -41,6 +41,7 @@ class ResourceHistoryList extends StatelessWidget {
           separatorBuilder: (context, index) => Divider(height: 1, color: theme.dividerColor),
           itemBuilder: (context, index) {
             final point = reversed[index];
+            final isOff = point.isOffDay;
             final hasNotes = point.notes.trim().isNotEmpty;
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 12),
@@ -56,15 +57,15 @@ class ResourceHistoryList extends StatelessWidget {
                   ),
                   SizedBox(
                     width: 120,
-                    child: _StatusBadge(status: point.status),
+                    child: isOff ? const _OffBadge() : _StatusBadge(status: point.status),
                   ),
                   Expanded(
                     child: Text(
-                      hasNotes ? point.notes : 'No note',
+                      isOff ? point.offLabel! : (hasNotes ? point.notes : 'No note'),
                       style: TextStyle(
                         fontSize: 13,
-                        fontStyle: hasNotes ? FontStyle.normal : FontStyle.italic,
-                        color: theme.colorScheme.onSurface.withValues(alpha: hasNotes ? 0.8 : 0.45),
+                        fontStyle: isOff || !hasNotes ? FontStyle.italic : FontStyle.normal,
+                        color: theme.colorScheme.onSurface.withValues(alpha: isOff || !hasNotes ? 0.5 : 0.8),
                       ),
                     ),
                   ),
@@ -85,9 +86,11 @@ class _SummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final updated = points.where((p) => p.status == ResourceStatus.updated).length;
-    final onLeave = points.where((p) => p.status == ResourceStatus.onLeave).length;
-    final notUpdated = points.where((p) => p.status == ResourceStatus.notUpdated).length;
+    final working = points.where((p) => !p.isOffDay).toList();
+    final offDays = points.length - working.length;
+    final updated = working.where((p) => p.status == ResourceStatus.updated).length;
+    final onLeave = working.where((p) => p.status == ResourceStatus.onLeave).length;
+    final notUpdated = working.where((p) => p.status == ResourceStatus.notUpdated).length;
 
     return Wrap(
       spacing: 16,
@@ -96,6 +99,7 @@ class _SummaryRow extends StatelessWidget {
         _SummaryChip(color: ResourceStatus.updated.color, label: 'Updated', count: updated),
         _SummaryChip(color: ResourceStatus.onLeave.color, label: 'On Leave', count: onLeave),
         _SummaryChip(color: ResourceStatus.notUpdated.color, label: 'Not Updated', count: notUpdated),
+        if (offDays > 0) _SummaryChip(color: Colors.blueGrey, label: 'Off', count: offDays),
       ],
     );
   }
@@ -141,6 +145,27 @@ class _StatusBadge extends StatelessWidget {
           Icon(status.icon, size: 12, color: color),
           const SizedBox(width: 5),
           Text(status.shortLabel, style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11.5)),
+        ],
+      ),
+    );
+  }
+}
+
+class _OffBadge extends StatelessWidget {
+  const _OffBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    const color = Colors.blueGrey;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(20)),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.weekend_rounded, size: 12, color: color),
+          SizedBox(width: 5),
+          Text('Off', style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 11.5)),
         ],
       ),
     );

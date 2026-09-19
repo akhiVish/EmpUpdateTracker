@@ -1,11 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/datasources/holiday_data_source.dart';
+import '../../data/datasources/mock_holiday_data_source.dart';
 import '../../data/datasources/mock_resource_data_source.dart';
 import '../../data/datasources/resource_data_source.dart';
+import '../../data/repositories/holiday_repository_impl.dart';
 import '../../data/repositories/resource_repository_impl.dart';
+import '../../domain/repositories/holiday_repository.dart';
 import '../../domain/repositories/resource_repository.dart';
+import '../../domain/usecases/add_holiday_usecase.dart';
 import '../../domain/usecases/add_resource_usecase.dart';
+import '../../domain/usecases/delete_holiday_usecase.dart';
 import '../../domain/usecases/delete_resource_usecase.dart';
+import '../../domain/usecases/get_holidays_usecase.dart';
 import '../../domain/usecases/get_metrics_history_usecase.dart';
 import '../../domain/usecases/get_resource_history_usecase.dart';
 import '../../domain/usecases/get_resources_usecase.dart';
@@ -55,4 +62,25 @@ final getMetricsHistoryUseCaseProvider = Provider<GetMetricsHistoryUseCase>((ref
 
 final getResourceHistoryUseCaseProvider = Provider<GetResourceHistoryUseCase>((ref) {
   return GetResourceHistoryUseCase(ref.watch(resourceRepositoryProvider));
+});
+
+// Holidays: same pattern, separate data source (its own API in future).
+final holidayDataSourceProvider = Provider<HolidayDataSource>((ref) {
+  return MockHolidayDataSource();
+});
+
+final holidayRepositoryProvider = Provider<HolidayRepository>((ref) {
+  return HolidayRepositoryImpl(ref.watch(holidayDataSourceProvider));
+});
+
+final getHolidaysUseCaseProvider = Provider<GetHolidaysUseCase>((ref) {
+  return GetHolidaysUseCase(ref.watch(holidayRepositoryProvider));
+});
+
+final addHolidayUseCaseProvider = Provider<AddHolidayUseCase>((ref) {
+  return AddHolidayUseCase(ref.watch(holidayRepositoryProvider));
+});
+
+final deleteHolidayUseCaseProvider = Provider<DeleteHolidayUseCase>((ref) {
+  return DeleteHolidayUseCase(ref.watch(holidayRepositoryProvider));
 });

@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../providers/holidays_provider.dart';
 import '../providers/resource_list_provider.dart';
 import '../widgets/filters/quick_filters_bar.dart';
 import '../widgets/header/dashboard_header.dart';
+import '../widgets/holidays/day_off_banner.dart';
 import '../widgets/metrics/metrics_banner.dart';
 import '../widgets/resource_list/resource_card_list.dart';
 import '../widgets/resource_list/resource_grid_view.dart';
@@ -18,7 +20,10 @@ class DashboardTabContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncResources = ref.watch(resourceListProvider);
-    final isInitialLoading = asyncResources.isLoading && !asyncResources.hasValue;
+    final asyncHolidays = ref.watch(holidaysProvider);
+    final dayInfo = ref.watch(selectedDayInfoProvider);
+    final isInitialLoading = (asyncResources.isLoading && !asyncResources.hasValue) ||
+        (asyncHolidays.isLoading && !asyncHolidays.hasValue);
     final hasFailed = asyncResources.hasError && !asyncResources.hasValue;
     final isRefreshing = asyncResources.isLoading && asyncResources.hasValue;
 
@@ -46,15 +51,19 @@ class DashboardTabContent extends ConsumerWidget {
                             children: [
                               DashboardHeader(deviceType: deviceType),
                               const SizedBox(height: AppSpacing.lg),
-                              MetricsBanner(deviceType: deviceType),
-                              const SizedBox(height: AppSpacing.lg),
-                              const QuickFiltersBar(),
-                              const SizedBox(height: AppSpacing.md),
-                              switch (deviceType) {
-                                DeviceType.desktop => const ResourceTableView(),
-                                DeviceType.tablet => const ResourceGridView(),
-                                DeviceType.mobile => const ResourceCardList(),
-                              },
+                              if (!dayInfo.isWorking)
+                                DayOffBanner(info: dayInfo)
+                              else ...[
+                                MetricsBanner(deviceType: deviceType),
+                                const SizedBox(height: AppSpacing.lg),
+                                const QuickFiltersBar(),
+                                const SizedBox(height: AppSpacing.md),
+                                switch (deviceType) {
+                                  DeviceType.desktop => const ResourceTableView(),
+                                  DeviceType.tablet => const ResourceGridView(),
+                                  DeviceType.mobile => const ResourceCardList(),
+                                },
+                              ],
                               const SizedBox(height: AppSpacing.lg),
                             ],
                           ),

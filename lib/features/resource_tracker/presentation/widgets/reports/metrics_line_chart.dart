@@ -105,7 +105,8 @@ class MetricsLineChart extends StatelessWidget {
       curveSmoothness: 0.25,
       color: color,
       barWidth: 2.5,
-      dotData: const FlDotData(show: false),
+      // A line needs two points; show dots so a 1-3 day range isn't blank.
+      dotData: FlDotData(show: points.length <= 3),
       belowBarData: BarAreaData(show: true, color: color.withValues(alpha: 0.08)),
     );
   }

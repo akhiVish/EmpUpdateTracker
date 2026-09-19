@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/utils/date_formatter.dart';
 import '../../domain/entities/daily_metrics_point.dart';
 import '../../domain/entities/resource_history_point.dart';
+import '../../domain/services/working_calendar.dart';
+import 'holidays_provider.dart';
 import 'repository_providers.dart';
 
 /// Quick presets for the Reports date range, plus a fully custom range
@@ -91,20 +93,28 @@ final effectiveReportRangeProvider = Provider<DateTimeRange>((ref) {
   }
 });
 
-/// Aggregate day-by-day metrics for the active range (all resources).
+/// Aggregate day-by-day metrics for the active range (all resources),
+/// working days only. Waits for holidays so they are never plotted.
 final metricsHistoryProvider = FutureProvider.autoDispose<List<DailyMetricsPoint>>((ref) async {
   final range = ref.watch(effectiveReportRangeProvider);
+  final holidays = await ref.watch(holidaysProvider.future);
   final getHistory = ref.watch(getMetricsHistoryUseCaseProvider);
-  return getHistory(startDate: range.start, endDate: range.end);
+  return getHistory(startDate: range.start, endDate: range.end, calendar: WorkingCalendar(holidays));
 });
 
 /// Day-by-day status/notes for the drilled-into resource, over the active
-/// range. Empty when no resource is selected.
+/// range, with off days flagged. Empty when no resource is selected.
 final resourceHistoryProvider = FutureProvider.autoDispose<List<ResourceHistoryPoint>>((ref) async {
   final resourceId = ref.watch(selectedReportResourceIdProvider);
   if (resourceId == null) return const [];
 
   final range = ref.watch(effectiveReportRangeProvider);
+  final holidays = await ref.watch(holidaysProvider.future);
   final getHistory = ref.watch(getResourceHistoryUseCaseProvider);
-  return getHistory(resourceId: resourceId, startDate: range.start, endDate: range.end);
+  return getHistory(
+    resourceId: resourceId,
+    startDate: range.start,
+    endDate: range.end,
+    calendar: WorkingCalendar(holidays),
+  );
 });

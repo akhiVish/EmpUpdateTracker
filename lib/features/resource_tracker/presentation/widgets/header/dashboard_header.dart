@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../../core/constants/app_constants.dart';
+import '../holidays/holidays_button.dart';
 import 'add_resource_dialog.dart';
 import 'date_navigator.dart';
 import 'resource_search_bar.dart';
@@ -35,6 +36,10 @@ class DashboardHeader extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
+            if (isMobile) ...[
+              const HolidaysButton(compact: true),
+              const SizedBox(width: 8),
+            ],
             const ThemeToggleButton(),
           ],
         ),
@@ -68,6 +73,7 @@ class DashboardHeader extends StatelessWidget {
                 icon: const Icon(Icons.add_rounded, size: 20),
                 label: const Text('Add Resource'),
               ),
+              const HolidaysButton(),
             ],
           ),
       ],

@@ -194,7 +194,9 @@ class _TrendCard extends ConsumerWidget {
             const MetricsLegend(),
             const SizedBox(height: 20),
             history.when(
-              data: (points) => MetricsLineChart(points: points),
+              data: (points) => points.isEmpty
+                  ? const _NoWorkingDays(aspectRatio: 1.9)
+                  : MetricsLineChart(points: points),
               loading: () => const AspectRatio(aspectRatio: 1.9, child: Center(child: CircularProgressIndicator())),
               error: (error, stack) => AspectRatio(
                 aspectRatio: 1.9,
@@ -223,12 +225,14 @@ class _SnapshotCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Latest day snapshot',
+              'Latest working day',
               style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 16),
             history.when(
-              data: (points) => SnapshotDonutChart(metrics: points.last.metrics),
+              data: (points) => points.isEmpty
+                  ? const _NoWorkingDays(aspectRatio: 1.3)
+                  : SnapshotDonutChart(metrics: points.last.metrics),
               loading: () => const AspectRatio(aspectRatio: 1.3, child: Center(child: CircularProgressIndicator())),
               error: (error, stack) => AspectRatio(
                 aspectRatio: 1.3,
@@ -238,6 +242,26 @@ class _SnapshotCard extends ConsumerWidget {
             const SizedBox(height: 16),
             const MetricsLegend(),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NoWorkingDays extends StatelessWidget {
+  const _NoWorkingDays({required this.aspectRatio});
+
+  final double aspectRatio;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return AspectRatio(
+      aspectRatio: aspectRatio,
+      child: Center(
+        child: Text(
+          'No working days in this range',
+          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurface.withValues(alpha: 0.5)),
         ),
       ),
     );
