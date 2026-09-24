@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../auth/presentation/providers/auth_provider.dart';
 import '../../providers/nav_provider.dart';
 
 class _NavItem {
@@ -71,6 +72,7 @@ class _AppSideNavState extends ConsumerState<AppSideNav> {
           ),
           for (final item in _navItems) _buildItem(context, item),
           const Spacer(),
+          _buildSignOut(context),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             child: IconButton(
@@ -80,6 +82,41 @@ class _AppSideNavState extends ConsumerState<AppSideNav> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSignOut(BuildContext context) {
+    final theme = Theme.of(context);
+    final muted = theme.colorScheme.onSurface.withValues(alpha: 0.6);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          onTap: () => ref.read(authControllerProvider.notifier).signOut(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              children: [
+                Icon(Icons.logout_rounded, size: 20, color: muted),
+                if (!_collapsed) ...[
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Sign out',
+                      style: TextStyle(color: muted, fontWeight: FontWeight.w600, fontSize: 13.5),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

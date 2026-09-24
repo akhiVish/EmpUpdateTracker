@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../auth/presentation/widgets/sign_out_button.dart';
 import '../providers/nav_provider.dart';
 import '../widgets/layout/app_bottom_nav.dart';
 import '../widgets/layout/app_side_nav.dart';
@@ -57,6 +58,7 @@ class _AppTabAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final tab = ref.watch(selectedTabProvider);
     return AppBar(
       title: Text(tab == AppTab.dashboard ? 'ResourceTrack' : tab.label, style: const TextStyle(fontWeight: FontWeight.w800)),
+      actions: const [Padding(padding: EdgeInsets.only(right: 12), child: SignOutButton())],
     );
   }
 

@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../data/datasources/firebase_holiday_data_source.dart';
+import '../../data/datasources/firebase_resource_data_source.dart';
 import '../../data/datasources/holiday_data_source.dart';
-import '../../data/datasources/mock_holiday_data_source.dart';
-import '../../data/datasources/mock_resource_data_source.dart';
 import '../../data/datasources/resource_data_source.dart';
 import '../../data/repositories/holiday_repository_impl.dart';
 import '../../data/repositories/resource_repository_impl.dart';
@@ -21,11 +21,11 @@ import '../../domain/usecases/update_resource_status_usecase.dart';
 import '../../domain/usecases/update_resource_usecase.dart';
 
 /// Dependency-injection wiring — the one place that knows about the
-/// concrete data source. To move off the mock later: implement
-/// [ResourceDataSource] against the real API and change only the line
-/// below; nothing else in the app needs to know.
+/// concrete data source. Swapping [FirebaseResourceDataSource] back for
+/// `MockResourceDataSource` (offline demo mode) means changing only the
+/// line below; nothing else in the app needs to know.
 final resourceDataSourceProvider = Provider<ResourceDataSource>((ref) {
-  return MockResourceDataSource();
+  return FirebaseResourceDataSource();
 });
 
 final resourceRepositoryProvider = Provider<ResourceRepository>((ref) {
@@ -64,9 +64,9 @@ final getResourceHistoryUseCaseProvider = Provider<GetResourceHistoryUseCase>((r
   return GetResourceHistoryUseCase(ref.watch(resourceRepositoryProvider));
 });
 
-// Holidays: same pattern, separate data source (its own API in future).
+// Holidays: same pattern, separate data source.
 final holidayDataSourceProvider = Provider<HolidayDataSource>((ref) {
-  return MockHolidayDataSource();
+  return FirebaseHolidayDataSource();
 });
 
 final holidayRepositoryProvider = Provider<HolidayRepository>((ref) {
