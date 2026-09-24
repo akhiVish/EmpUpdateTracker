@@ -9,11 +9,12 @@ class DateNavigator extends ConsumerWidget {
   const DateNavigator({super.key});
 
   Future<void> _pickDate(BuildContext context, WidgetRef ref, DateTime current) async {
+    final today = DateTime.now();
     final picked = await showDatePicker(
       context: context,
       initialDate: current,
       firstDate: DateTime(current.year - 2),
-      lastDate: DateTime(current.year + 2),
+      lastDate: today,
     );
     if (picked != null) {
       ref.read(selectedDateProvider.notifier).set(picked);
@@ -24,6 +25,7 @@ class DateNavigator extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final selectedDate = ref.watch(selectedDateProvider);
+    final isToday = !selectedDate.isBefore(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
@@ -60,7 +62,7 @@ class DateNavigator extends ConsumerWidget {
           IconButton(
             tooltip: 'Next day',
             icon: const Icon(Icons.chevron_right_rounded),
-            onPressed: () => ref.read(selectedDateProvider.notifier).nextDay(),
+            onPressed: isToday ? null : () => ref.read(selectedDateProvider.notifier).nextDay(),
           ),
         ],
       ),

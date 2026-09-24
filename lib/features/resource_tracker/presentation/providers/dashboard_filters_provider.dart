@@ -8,11 +8,20 @@ class SelectedDateController extends Notifier<DateTime> {
   @override
   DateTime build() => AppDateFormatter.dateOnly(DateTime.now());
 
-  void set(DateTime date) => state = AppDateFormatter.dateOnly(date);
+  void set(DateTime date) {
+    final normalized = AppDateFormatter.dateOnly(date);
+    final today = AppDateFormatter.dateOnly(DateTime.now());
+    state = normalized.isAfter(today) ? today : normalized;
+  }
 
   void previousDay() => state = state.subtract(const Duration(days: 1));
 
-  void nextDay() => state = state.add(const Duration(days: 1));
+  void nextDay() {
+    final today = AppDateFormatter.dateOnly(DateTime.now());
+    if (state.isBefore(today)) {
+      state = state.add(const Duration(days: 1));
+    }
+  }
 
   void today() => state = AppDateFormatter.dateOnly(DateTime.now());
 }
