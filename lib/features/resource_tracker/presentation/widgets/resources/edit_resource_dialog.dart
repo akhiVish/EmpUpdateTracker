@@ -47,7 +47,21 @@ class _EditResourceDialogState extends ConsumerState<EditResourceDialog> {
   String? _validateMobile(String? value) {
     final digits = (value ?? '').replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) return 'Mobile number is required';
-    if (digits.length < 7 || digits.length > 15) return 'Enter a valid mobile number';
+    if (digits.length != 10) return 'Enter a valid 10-digit mobile number';
+    final isDuplicate = ref
+        .read(dailyResourcesProvider)
+        .any((resource) => resource.id != widget.resource.id && resource.mobileNumber == digits);
+    if (isDuplicate) return 'A resource with this mobile number already exists';
+    return null;
+  }
+
+  String? _validateName(String? value) {
+    final name = (value ?? '').trim();
+    if (name.isEmpty) return 'Name is required';
+    final isDuplicate = ref
+        .read(dailyResourcesProvider)
+        .any((resource) => resource.id != widget.resource.id && resource.name.toLowerCase() == name.toLowerCase());
+    if (isDuplicate) return 'A resource with this name already exists';
     return null;
   }
 
@@ -93,13 +107,13 @@ class _EditResourceDialogState extends ConsumerState<EditResourceDialog> {
                   controller: _nameController,
                   autofocus: true,
                   decoration: const InputDecoration(labelText: 'Full name'),
-                  validator: (value) => (value == null || value.trim().isEmpty) ? 'Name is required' : null,
+                  validator: _validateName,
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
                   controller: _mobileController,
                   keyboardType: TextInputType.phone,
-                  inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s]'))],
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(10)],
                   decoration: const InputDecoration(labelText: 'Mobile Number', prefixIcon: Icon(Icons.phone_rounded, size: 20)),
                   validator: _validateMobile,
                   onFieldSubmitted: (_) => _submit(),
